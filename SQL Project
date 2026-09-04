@@ -1,0 +1,193 @@
+--Data Cleaning
+
+
+SELECT *
+  FROM [world_layoffs].[dbo].[layoffs]
+
+--TO DO
+--1. Remove Duplicates
+--2. Standardize the Data
+--3. Null Value or Blank Values
+--4. Remove any Columns
+
+
+--1. Remove Duplicates
+--STEP 1; CREATE A STAGING TABLE 
+--TO KEEP THE RAW DATA INTACT IN CASE OF MISTAKES
+SELECT *
+INTO layoffs_staging
+FROM layoffs;
+
+SELECT *
+  FROM [world_layoffs].[dbo].[layoffs_staging]
+
+--STEP 2;FIND THE DUPLICATES
+--THIS QUERY HIGHLIGHTS HOW MANY TIMES A ROW APPEARS.IF A ROW THAT IS COMPLETELY IDENTICAL APPEARS TWICE, IT'S A DUPLICATE 
+SELECT *,
+ROW_NUMBER() OVER(
+    PARTITION BY 
+        company,
+        location,
+        industry,
+        total_laid_off,
+        percentage_laid_off,
+        [date],
+        stage,
+        country,
+        funds_raised_millions
+    ORDER BY company
+) AS row_num
+FROM layoffs_staging;
+
+--THIS QUERY JUST SIMPLY BRINGS OUT THE DUPLICATES AS THE RESULTS ONLY, THEN U CAN CHECK THROUGH TO ENSURE THEY ARE ALL DUPLICATES
+WITH duplicate_cte AS
+(
+SELECT *,
+ROW_NUMBER() OVER(
+    PARTITION BY 
+        company,
+        location,
+        industry,
+        total_laid_off,
+        percentage_laid_off,
+        [date],
+        stage,
+        country,
+        funds_raised_millions
+    ORDER BY company
+) AS row_num
+FROM layoffs_staging
+)
+SELECT *
+FROM duplicate_cte
+WHERE row_num > 1
+
+-- CHECKING A DUPLICATE
+SELECT *
+FROM layoffs_staging
+WHERE company = 'CASPER'
+
+-- STEP 3; DELETING UR DUPLICATES
+--DUE TO THE VERSATILITY OF MS SQL I CAN EASILY DELETE THE DUPLICATE BY INTERCHANGING THE SELECT WITH THE DELETE FUNCTION IN THIS CTE
+WITH duplicate_cte AS
+(
+SELECT *,
+ROW_NUMBER() OVER(
+    PARTITION BY 
+        company,
+        location,
+        industry,
+        total_laid_off,
+        percentage_laid_off,
+        [date],
+        stage,
+        country,
+        funds_raised_millions
+    ORDER BY company
+) AS row_num
+FROM layoffs_staging
+)
+DELETE 
+FROM duplicate_cte
+WHERE row_num > 1
+-- DONE 
+
+
+--2. Standardize the Data
+--STEP 1; TRIM UNNECESSARY SPACES
+SELECT company, (TRIM (company)) 
+FROM layoffs_staging
+
+--UPDATE UR CHANGES PERMANENTLY
+UPDATE layoffs_staging
+SET company = TRIM (company);
+
+--STEP 2; let's check the industries
+SELECT DISTINCT industry
+FROM layoffs_staging
+ORDER BY 1;
+
+SELECT *
+FROM layoffs_staging
+WHERE industry LIKE 'Crypto%';
+
+--UPDATE THE INDUSTRY ,THERE WERE 3 TYPES OF CRYPTO ;CRYPTOCURRENCY Cryptocorrency and Crypto, so we just changed it all to Crypto
+UPDATE layoffs_staging
+SET industry = 'Crypto'
+WHERE industry LIKE 'Crypto%';
+
+--STEP 2; let's check the locations
+SELECT DISTINCT location
+FROM layoffs_staging
+ORDER BY 1;
+
+--STEP 2; let's check the countries
+SELECT DISTINCT country
+FROM layoffs_staging
+ORDER BY 1;
+
+--there is a repetition of a particular country , united states. so we first confirm it with the following query 
+--and then update it with the next one
+SELECT * 
+FROM layoffs_staging
+WHERE country LIKE 'United States%'
+ORDER BY 1;
+
+UPDATE layoffs_staging
+SET country = 'United States'
+WHERE country LIKE 'United States%';
+
+--i converted the date column from an integer data type to a date data type,
+--what i did in the first query was to change the arrangement ,basically because if i just tried to alter the column to a 
+--date data type it wouldn't work
+--then the second query altered it to the date data type
+UPDATE layoffs_staging
+SET [date] = TRY_CONVERT(DATE, [date], 101);
+
+ALTER TABLE layoffs_staging
+ALTER COLUMN [date] DATE;
+
+--checking null values...
+SELECT *
+FROM layoffs_staging
+WHERE total_laid_off IS NULL
+AND percentage_laid_off IS NULL;
+
+--in ms sql an empty column doesn't actually has the column as 'NULL' so this query filled in
+--every empty column to have null to make it easy to do what i need 
+UPDATE layoffs_staging
+SET percentage_laid_off = NULL
+WHERE percentage_laid_off = 'NULL';
+
+
+SELECT *
+FROM layoffs_staging
+WHERE industry is NULL
+
+SELECT *
+FROM layoffs_staging t1
+JOIN layoffs_staging t2
+    ON t1.company = t2.company
+    AND t1.location = t2.location
+WHERE (t1.industry IS NULL OR t1.industry = '')
+AND t2.industry IS NOT NULL
+
+UPDATE t1
+SET t1.industry = t2.industry
+FROM layoffs_staging t1
+JOIN layoffs_staging t2
+    ON t1.company = t2.company
+WHERE t1.industry IS NULL
+AND t2.industry IS NOT NULL;
+
+--CHECKING THIS AGAIN....
+SELECT* 
+FROM layoffs_staging
+WHERE total_laid_off IS NULL
+AND percentage_laid_off IS NULL
+--DELETING UNNECESSARY QUERY
+DELETE
+FROM layoffs_staging
+WHERE total_laid_off IS NULL
+AND percentage_laid_off IS NULL
+--DONE
