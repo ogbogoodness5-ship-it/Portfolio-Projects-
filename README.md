@@ -16,6 +16,9 @@ An interactive two-page Power BI dashboard analyzing product sales, customer, an
 
 **Skills demonstrated:** data modeling, DAX/relationships, dashboard design, data visualization
 
+![Dashboard Page 1](./Screenshot%202026-09-05%20000315.png)
+![Dashboard Page 2](./Screenshot%202026-09-05%20000334.png)
+
 ---
 
 ## 🧹 Project 2: Data Cleaning (SQL)
@@ -28,6 +31,8 @@ Cleaned a raw, messy dataset in MS SQL Server, with comments documenting the rea
 - Resolved null and blank values, including filling gaps by joining records on shared fields
 
 **Skills demonstrated:** SQL querying, CTEs, window functions, data standardization, data quality control
+
+🔗 [View SQL script](./SQL%20Project)
 
 ---
 
@@ -42,7 +47,7 @@ An Excel dashboard analyzing employee sales performance and HR metrics.
 
 **Skills demonstrated:** PivotTables, conditional formulas (IF-based logic), chart creation, dashboard layout
 
-🔗 [View spreadsheet](#) https://1drv.ms/x/c/ac449af7c0416659/IQAM7vebivBMTJWFaGJC2NhtAYGT18U-4bbtwRvya1aLigE?e=qjsJ7n
+🔗 [View spreadsheet](https://1drv.ms/x/c/ac449af7c0416659/IQAM7vebivBMTJWFaGJC2NhtAYGT18U-4bbtwRvya1aLigE?e=qjsJ7n)
 
 ---
 
